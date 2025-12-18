@@ -113,6 +113,58 @@ let currentCategory = 0;
 let currentQuestion = 0;
 let answers = [];
 let totalQuestions = 0;
+let completedCategories = [];
+
+// Sauvegarder la progression
+function saveProgress() {
+  var progress = {
+    currentCategory: currentCategory,
+    currentQuestion: currentQuestion,
+    answers: answers,
+    completedCategories: completedCategories
+  };
+  localStorage.setItem('quizProgress', JSON.stringify(progress));
+}
+
+// Charger la progression
+function loadProgress() {
+  var saved = localStorage.getItem('quizProgress');
+  if (saved) {
+    var progress = JSON.parse(saved);
+    currentCategory = progress.currentCategory;
+    currentQuestion = progress.currentQuestion;
+    answers = progress.answers || [];
+    completedCategories = progress.completedCategories || [];
+    return true;
+  }
+  return false;
+}
+
+// Réinitialiser la progression
+function resetProgress() {
+  localStorage.removeItem('quizProgress');
+  currentCategory = 0;
+  currentQuestion = 0;
+  answers = [];
+  completedCategories = [];
+}
+
+// Aller à la page du quiz
+function goToQuiz() {
+  document.getElementById('homepage').style.display = 'none';
+  document.getElementById('quizPage').style.display = 'block';
+  
+  // Vérifier s'il y a une progression sauvegardée
+  var hasProgress = loadProgress();
+  
+  if (hasProgress) {
+    // Reprendre là où on s'était arrêté
+    init();
+  } else {
+    // Commencer un nouveau quiz
+    init();
+  }
+}
 
 function renderProgressSteps() {
   let container = document.getElementById('progressSteps');
@@ -137,27 +189,25 @@ function updateProgressSteps() {
 }
 
 function init() {
-  updateCategoryButtons();
+  updateCategoryDisplay();
   updateCategoryTitle();
   updateFunFact();
-  loadCategory(0);
+  loadCategory(currentCategory);
+  displayQuestion();
+  saveProgress();
 }
 
-function selectCategory(index) {
-  currentCategory = index;
-  currentQuestion = 0;
-  updateCategoryButtons();
-  updateCategoryTitle();
-  loadCategory(index);
-  showScreen('start');
-}
-
-function updateCategoryButtons() {
-  let buttons = document.querySelectorAll('.category-btn');
-  buttons.forEach(function(btn, index) {
-    btn.textContent = categories[index].nom;
-    if (index === currentCategory) btn.classList.add('active');
-    else btn.classList.remove('active');
+function updateCategoryDisplay() {
+  let items = document.querySelectorAll('.category-item');
+  items.forEach(function(item, index) {
+    item.textContent = categories[index].nom;
+    item.classList.remove('active', 'completed');
+    
+    if (completedCategories.includes(index)) {
+      item.classList.add('completed');
+    } else if (index === currentCategory) {
+      item.classList.add('active');
+    }
   });
 }
 
@@ -166,8 +216,11 @@ function updateCategoryTitle() {
 }
 
 function loadCategory(index) {
-  let category = categories[index];
-  answers = new Array(category.questions.length).fill(null);
+  var category = categories[index];
+  
+  if (!answers || answers.length === 0) {
+    answers = new Array(category.questions.length).fill(null);
+  }
   totalQuestions = category.questions.length;
 
   renderProgressSteps();
@@ -177,19 +230,6 @@ function loadCategory(index) {
 function updateFunFact() {
   let randomIndex = Math.floor(Math.random() * funFacts.length);
   document.getElementById('funFact').textContent = funFacts[randomIndex];
-}
-
-function showScreen(screenId) {
-  document.querySelectorAll('.screen').forEach(function(screen) {
-    screen.style.display = 'none';
-  });
-  document.getElementById(screenId).style.display = 'flex';
-}
-
-function startQuiz() {
-  currentQuestion = 0;
-  showScreen('quiz');
-  displayQuestion();
 }
 
 function displayQuestion() {
@@ -218,8 +258,23 @@ function displayQuestion() {
   updateNavDots();
   updateProgressSteps();
 
+  // Gérer le bouton précédent
+  let prevBtn = document.getElementById('prevBtn');
+  if (currentQuestion === 0 && currentCategory === 0) {
+    prevBtn.disabled = true;
+  } else {
+    prevBtn.disabled = false;
+  }
+
+  // Gérer le bouton suivant
   let nextBtn = document.getElementById('nextBtn');
-  nextBtn.textContent = (currentQuestion === totalQuestions - 1) ? 'Terminer' : 'Suivant';
+  if (currentQuestion === totalQuestions - 1 && currentCategory === categories.length - 1) {
+    nextBtn.textContent = 'Terminer';
+  } else if (currentQuestion === totalQuestions - 1) {
+    nextBtn.textContent = 'Rubrique suivante';
+  } else {
+    nextBtn.textContent = 'Suivant';
+  }
 }
 
 function updateNavDots() {
@@ -245,41 +300,69 @@ function selectOption(index) {
   labels.forEach(function(label, i) {
     label.classList.toggle('selected', i === index);
   });
+  
+  saveProgress();
 }
 
 function next() {
   if (currentQuestion < totalQuestions - 1) {
+    // Question suivante dans la même rubrique
     currentQuestion++;
     updateProgressSteps();
     displayQuestion();
+    saveProgress();
+  } else if (currentCategory < categories.length - 1) {
+    // Passer à la rubrique suivante
+    completedCategories.push(currentCategory);
+    currentCategory++;
+    answers = new Array(categories[currentCategory].questions.length).fill(null);
+    loadCategory(currentCategory);
+    currentQuestion = 0;
+    updateCategoryTitle();
+    updateCategoryDisplay();
+    updateFunFact();
+    displayQuestion();
+    saveProgress();
   } else {
-    showResult();
+    
+    completedCategories.push(currentCategory);
+    resetProgress();
+    alert('Félicitations ! Vous avez terminé toutes les rubriques du quiz !');
+    location.reload();
   }
 }
 
 function prev() {
   if (currentQuestion > 0) {
+    
     currentQuestion--;
     updateProgressSteps();
     displayQuestion();
+    saveProgress();
+  } else if (currentCategory > 0) {
+   
+    currentCategory--;
+    loadCategory(currentCategory);
+    currentQuestion = totalQuestions - 1;
+    updateCategoryTitle();
+    updateCategoryDisplay();
+    displayQuestion();
+    saveProgress();
+  }
+}
+
+window.onload = function() {
+  
+  var hasProgress = loadProgress();
+  
+  if (hasProgress) {
+   
+    document.getElementById('homepage').style.display = 'none';
+    document.getElementById('quizPage').style.display = 'block';
+    init();
   } else {
-    showScreen('start');
+   
+    document.getElementById('homepage').style.display = 'flex';
+    document.getElementById('quizPage').style.display = 'none';
   }
-}
-
-function showResult() {
-  let score = 0;
-  for (let i = 0; i < answers.length; i++) {
-    if (answers[i] === categories[currentCategory].questions[i].correct) {
-      score++;
-    }
-  }
-  
-  document.getElementById('scoreText').textContent = 
-    'Vous avez ' + score + ' bonnes réponses sur ' + totalQuestions + ' dans la catégorie "' + categories[currentCategory].nom + '".';
-  
-  showScreen('result');
-  updateFunFact();
-}
-
-window.onload = init;
+};
