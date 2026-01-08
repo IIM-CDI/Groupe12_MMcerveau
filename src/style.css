@@ -126,7 +126,7 @@ p, label, button, input, .subtitle, .option-label {
     text-align: center;
     margin-bottom: 25px;
     max-width: 900px;
-    color: #ffffff;
+    color: black;
 }
 
 .subtitle {
@@ -136,7 +136,7 @@ p, label, button, input, .subtitle, .option-label {
     margin-bottom: 50px;
     opacity: 0.85;
     font-weight: 400;
-    color: #ffffff;
+    color: black;
 }
 
 /* Boutons */

@@ -136,7 +136,7 @@ window.startQuiz = function() {
     
     currentCat = 0;
     currentQues = 0;
-
+    document.getElementById('currentCategoryTitle').textContent = categories[currentCat].nom;
     startQuestions(); 
 };
 
@@ -185,6 +185,7 @@ window.startQuestions = function() {
 };
 
 function displayQuestion() {
+    document.getElementById('currentCategoryTitle').textContent = categories[currentCat].nom;
     isShowingExpl = false;
     lastSelectedOption = "";
     const data = categories[currentCat].questions[currentQues];
