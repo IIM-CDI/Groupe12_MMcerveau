@@ -7,35 +7,83 @@
   <link rel="stylesheet" href="src/style.css">
 </head>
 <body>
-  <!-- Page d'accueil -->
+
   <div id="homepage" class="homepage">
     <div class="logo-home">
-      <img src="LOGO_NEURODON_FRC.png" alt="Fondation pour la Recherche sur le Cerveau - Neurodon">
+      <a href="https://www.frcneurodon.org/">
+        <img src="LOGO_NEURODON_FRC.png" alt="Logo Neurodon - Fédération pour la Recherche sur le Cerveau">
+      </a>
     </div>
-    <div class="badge">● Quiz</div>
+    <div class="badge" aria-hidden="true">● QUIZ</div>
     <h1 class="main-title">Connaissez-vous vraiment<br>votre cerveau?</h1>
-    <p class="subtitle">Connaissez-vous vraiment votre cerveau? Connaissez-<br>vous vraiment votre cerveau? Connaissez-vous<br>vraiment votre cerveau?</p>
-    <button class="btn-start" onclick="goToQuiz()">Commencez</button>
-    <div class="decorative-lines"></div>
+    <p class="subtitle">Répondez simplement à ces quelques questions.</p>
+    <button class="btn-start" onclick="startQuiz()">Commencez le quiz</button>
+    <div class="decorative-lines" aria-hidden="true"></div>
   </div>
 
-  <!-- Quiz -->
+  <div id="newsletterPage" class="newsletter-page" style="display: none;">
+    <div class="logo">
+      <a href="https://www.frcneurodon.org/">
+        <img src="LOGO_NEURODON_FRC.png" alt="Logo Neurodon">
+      </a>
+    </div>
+    <div class="newsletter-content">
+      <div class="badge" aria-hidden="true">● NEUROMINUTES</div>
+      <div class="newsletter-card">
+        <h3>Inscription à NeuroMinutes</h3>
+        <p>Inscrivez-vous pour recevoir des nouvelles sur la fondation et la recherche.</p>
+        <div class="input-group">
+          <span class="mail-icon" aria-hidden="true">✉</span>
+          <label for="newsletterEmail" class="sr-only" style="display:none;">Adresse email</label>
+          <input type="email" id="newsletterEmail" placeholder="Votre adresse mail" aria-label="Votre adresse mail">
+        </div>
+        <button class="btn-subscribe" onclick="validateNewsletter()">Je m'inscris</button>
+      </div>
+    </div>
+    <footer>
+      <div class="empreinte">
+        <img src="EMPREINTE_VERT-MOUSSE.png" alt="">
+      </div>
+    </footer>
+  </div>
+
   <div id="quizPage" class="quiz-page" style="display: none;">
     <div class="logo">
-      <img src="LOGO_NEURODON_FRC.png" alt="Fondation pour la Recherche sur le Cerveau - Neurodon">
+       <a href="https://www.frcneurodon.org/">
+         <img src="LOGO_NEURODON_FRC.png" alt="Logo Neurodon">
+       </a>
     </div>
     
     <div class="container">
       <main class="quiz-main">
-        <h1 id="currentCategory" class="category-title">Nom rubrique</h1>
-        <div class="progress-steps" id="progressSteps"></div>
+        <h1 id="currentCategoryTitle" class="category-title">NOM RUBRIQUE</h1>
         
-        <div id="quiz" class="screen quiz">
-          <div class="question-box">
-            <h2 id="questionText">Première question ?</h2>
-            <div class="options" id="optionsContainer"></div>
+        <div id="funFactScreen" class="fun-fact-screen">
+          <div class="question-box fact-box">
+            <div class="saviez">
+              <h3 class="fact-label">LE SAVIEZ-VOUS ?</h3>
+              <p id="funFactText"></p>
+            </div>
+            <div class="carousel-dots" aria-hidden="true">
+              <span class="dot active"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+            </div>
           </div>
-          <div class="nav-dots" id="navDots"></div>
+          <div class="nav-buttons">
+            <div></div>
+            <button class="btn-primary" onclick="startQuestions()">Suivant</button>
+          </div>
+        </div>
+
+        <div id="questionsScreen" style="display: none;">
+          <div class="progress-steps" id="progressSteps" role="progressbar" aria-label="Progression dans la rubrique"></div>
+          <div class="question-box">
+            <h2 id="questionText">Chargement de la question...</h2>
+            <div class="options" id="optionsContainer"></div>
+            <div id="explanationBox" class="explanation-style" style="display: none;"></div>
+          </div>
+          <div class="nav-dots" id="navDots" aria-hidden="true"></div>
           <div class="nav-buttons">
             <button class="btn-secondary" onclick="prev()" id="prevBtn">Précédent</button>
             <button class="btn-primary" onclick="next()" id="nextBtn">Suivant</button>
@@ -43,24 +91,13 @@
         </div>
       </main>
       
-      <aside class="sidebar">
-        <div class="info-box">
-          <h3>Le saviez-vous ?</h3>
-          <p id="funFact"></p>
-          <div class="carousel-dots">
-            <span class="dot"></span>
-            <span class="dot active"></span>
-            <span class="dot"></span>
-          </div>
-        </div>
-        
-        <!-- Liste des rubriques (non cliquables, juste affichage) -->
+      <aside class="sidebar" role="complementary" aria-label="Rubriques du quiz">
         <nav class="categories">
-          <div class="category-item" data-index="0">Nom rubrique 1</div>
-          <div class="category-item" data-index="1">Nom rubrique 2</div>
-          <div class="category-item" data-index="2">Nom rubrique 3</div>
-          <div class="category-item" data-index="3">Nom rubrique 4</div>
-          <div class="category-item" data-index="4">Nom rubrique 5</div>
+          <div class="category-item">Cerveau & activité intellectuelle</div>
+          <div class="category-item">Cerveau & activité physique</div>
+          <div class="category-item">Cerveau & alimentation</div>
+          <div class="category-item">Cerveau & sommeil</div>
+          <div class="category-item">Cerveau & interactions sociales</div>
         </nav>
       </aside>
     </div>
@@ -73,5 +110,6 @@
   </div>
 
   <script src="src/main.js"></script>
+  <img src="727043fe0c5142f9dc5b1f316a6daba4311263e5.png" class="fixed-background-image" alt="">
 </body>
 </html>
